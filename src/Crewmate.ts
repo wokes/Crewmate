@@ -1,0 +1,280 @@
+import * as Config from 'config'
+import { CategoryChannel, Client, Guild, MessageEmbed, TextChannel, User, VoiceChannel } from 'discord.js'
+
+import App from './App'
+
+// import { ChatCommands, DiscordFeeds, GroupAnnouncements, LinkWarnings } from './Apps'
+
+class Crewmate {
+  public app: App
+
+  public guild: Guild
+  public categories: any
+  public textChannels: any
+  public voiceChannels: any
+
+  public mainCategory: CategoryChannel
+  public adminCategory: CategoryChannel
+  public lobbyStatusChannel: TextChannel
+  public voiceLogChannel: TextChannel
+
+  public gameLobbyCategories: any
+  public statusMessages: any
+  public lastStatusMessage: Date
+
+  // public apps: any
+
+  constructor(app: App) {
+    this.app = app
+
+    this.categories = []
+    this.textChannels = []
+    this.voiceChannels = []
+    this.gameLobbyCategories = []
+
+    this.statusMessages = {
+      empty: null,
+      full: null,
+      nonempty: null
+    }
+
+    // this.apps = {}
+    // this.registerApps()
+
+    this.init()
+  }
+
+  public get client() : Client {
+    return this.app.client
+  }
+
+  public async sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms))
+  }
+
+  public isGameLobbyChannel(channel: TextChannel | VoiceChannel): boolean {
+    return this.gameLobbyCategories.find(cat => cat.id === channel.parentID) !== undefined
+  }
+
+  public getVoiceChannelPairedWithTextChannel(textChannel: TextChannel) : VoiceChannel {
+    return this.gameLobbyCategories.find(cat => cat.id === textChannel.parentID).voice
+  }
+
+  public async updateVoiceChannelName(channel: VoiceChannel, code?: string, region?: string): Promise<void> {
+    const bits = ['voice']
+
+    if (code) {
+      bits.push(code)
+
+      if (region) {
+        bits.push(region)
+      }
+    }
+
+    const name = bits.join('-')
+
+    if (channel.name !== name) {
+      console.log(`Changing ${channel.name} to ${name}`)
+      await channel.edit({ name })
+      await this.sleep(2000)
+    }
+  }
+
+  public getVoiceChannelUserCount(channel: VoiceChannel): number {
+    return channel.members.array().length
+  }
+
+  public voiceChannelIsEmpty(channel: VoiceChannel): boolean {
+    return this.getVoiceChannelUserCount(channel) === 0
+  }
+
+  public userIsInVoiceChannel(user: User, channel: VoiceChannel): boolean {
+    return channel.members.get(user.id) !== undefined
+  }
+
+  public async logVoice(message): Promise<void> {
+    // this.voiceLogChannel.send(message)
+  }
+
+  public looksLikeGameCode(text: string): boolean {
+    text = text.toLowerCase()
+    return text.length === 6 && /[a-z]{6}/.test(text)
+  }
+
+  public async purgeStatusMessages(): Promise<void> {
+    await this.lobbyStatusChannel.bulkDelete(10)
+    await this.sleep(2000)
+  }
+
+  public async updateStatusEmbeds(): Promise<void> {
+    this.gameLobbyCategories.sort((a, b) => (a.position > b.position) ? 1 : -1)
+
+    const lobbies = {
+      empty: [],
+      full: [],
+      nonempty: []
+    }
+
+    this.gameLobbyCategories.forEach(cat => {
+      const slotCount = cat.voice.userLimit
+      const userCount = JSON.parse(JSON.stringify(cat.voice.members)).length
+      const slotsAvailable = slotCount - userCount
+      let isFull = slotsAvailable === 0
+
+      // Fix for admins/mods joining full channels and them displaying as not full
+      if (slotsAvailable < 0) {
+        isFull = true
+      }
+
+      const emoji = isFull ? ':no_entry_sign:' : ':white_check_mark:'
+
+      const embedFieldData = {
+        name: `${emoji} ${this.categories.find(c => c.id === cat.id).name}:⠀⠀${userCount} / ${slotCount}`,
+        value: isFull ? '⠀' : `[:arrow_forward: Dołącz :arrow_backward:](https://discord.gg/${cat.invite.code})\n⠀`
+      }
+
+      if (slotsAvailable === slotCount) {
+        lobbies.empty.push(embedFieldData)
+      } else if (isFull) {
+        lobbies.full.push(embedFieldData)
+      } else {
+        lobbies.nonempty.push(embedFieldData)
+      }
+    })
+
+    let embed = new MessageEmbed()
+      .setTimestamp()
+      .setTitle('Puste lobby:')
+      .setColor('GREEN')
+      .addFields(lobbies.empty)
+
+    if (this.statusMessages.empty === null) {
+      this.statusMessages.empty = await this.lobbyStatusChannel.send(embed)
+    } else {
+      await this.statusMessages.empty.edit(null, embed)
+    }
+
+    await this.sleep(2000)
+
+    embed = new MessageEmbed()
+      .setTimestamp()
+      .setTitle('Pełne lobby:')
+      .setColor('RED')
+      .addFields(lobbies.full)
+
+    if (this.statusMessages.full === null) {
+      this.statusMessages.full = await this.lobbyStatusChannel.send(embed)
+    } else {
+      await this.statusMessages.full.edit(null, embed)
+    }
+
+    await this.sleep(2000)
+
+    embed = new MessageEmbed()
+      .setTimestamp()
+      .setTitle('Szukają ekipy:')
+      .setColor('YELLOW')
+      .addFields(lobbies.nonempty)
+
+    if (this.statusMessages.nonempty === null) {
+      this.statusMessages.nonempty = await this.lobbyStatusChannel.send(embed)
+    } else {
+      await this.statusMessages.nonempty.edit(null, embed)
+    }
+
+    await this.sleep(2000)
+  }
+
+  private async init(): Promise<void> {
+    this.client.user.setActivity('Powered by Wojtex')
+
+    await this.getGuild()
+    this.getCategories()
+    this.getChannels()
+
+    await this.getGameLobbies()
+    await this.purgeStatusMessages()
+    await this.updateStatusEmbeds()
+
+    this.client.on('debug', info => {
+      console.log({ info })
+    })
+
+    this.client.on('error', error => {
+      console.log({ error })
+    })
+
+    this.client.on('warn', warn => {
+      console.log({ warn })
+    })
+
+    this.client.on('rateLimit', rateLimit => {
+      console.log({ rateLimit })
+    })
+  }
+
+  private async getGuild(): Promise<void> {
+    this.guild = await this.client.guilds.fetch(Config.guildId)
+  }
+
+  private getCategories(): void {
+    this.categories = this.client.channels.cache.filter(ch => ch.type === 'category')
+
+    this.mainCategory = this.categories.find(cat => cat.name.toLowerCase() === Config.mainCategoryName.toLowerCase())
+    this.adminCategory = this.categories.find(cat => cat.name.toLowerCase() === Config.adminCategoryName.toLowerCase())
+  }
+
+  private getChannels(): void {
+    this.textChannels = this.client.channels.cache.filter(ch => ch.type === 'text')
+    this.voiceChannels = this.client.channels.cache.filter(ch => ch.type === 'voice')
+
+    this.lobbyStatusChannel = this.textChannels.find(ch => ch.name.toLowerCase() === Config.lobbyStatusChannelName.toLowerCase() && ch.parentID === this.mainCategory.id)
+    this.voiceLogChannel = this.textChannels.find(ch => ch.name.toLowerCase() === Config.voiceLogChannelName.toLowerCase() && ch.parentID === this.adminCategory.id)
+  }
+
+  private async getGameLobbies(): Promise<void> {
+    const categories = this.categories.filter(cat => cat.name.includes('Lobby #'))
+
+    const promises = categories.map(async cat => {
+      const voice = this.voiceChannels.find(ch => ch.parentID === cat.id)
+      const invites = await voice.fetchInvites()
+
+      let permInvite = invites.find(i => i.maxAge === 0 && i.inviter.id === this.client.user.id)
+
+      if (!permInvite) {
+        permInvite = await voice.createInvite({ maxAge: 0 })
+      }
+
+      this.gameLobbyCategories.push({
+        id: cat.id,
+        position: cat.rawPosition,
+        number: Number(cat.name.replace('Lobby #', '')),
+        voice: voice,
+        text: this.textChannels.find(ch => ch.parentID === cat.id),
+        invite: permInvite
+      })
+    })
+
+    await Promise.all(promises)
+  }
+
+  // private registerApps(): void {
+  //   if (Config.apps.DiscordFeeds.enabled) {
+  //     this.apps.DiscordFeeds = new DiscordFeeds(this)
+  //   }
+
+  //   if (Config.apps.GroupAnnouncements.enabled) {
+  //     this.apps.GroupAnnouncements = new GroupAnnouncements(this)
+  //   }
+
+  //   if (Config.apps.ChatCommands.enabled) {
+  //     this.apps.ChatCommands = new ChatCommands(this)
+  //   }
+
+  //   if (Config.apps.LinkWarnings.enabled) {
+  //     this.apps.LinkWarnings = new LinkWarnings(this)
+  //   }
+  // }
+}
+
+export default Crewmate

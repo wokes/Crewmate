@@ -1,0 +1,37 @@
+{
+  "name": "among-us-discord-crewmate",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p .",
+    "serve": "node dist/index.js",
+    "test": "npm run lint",
+    "lint": "tslint --project . --config tslint.json --format prose",
+    "lint:fix": "tslint --project . --config tslint.json --fix"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/cli": "^7.11.6",
+    "@babel/core": "^7.11.6",
+    "@babel/node": "^7.10.5",
+    "@babel/preset-env": "^7.11.5",
+    "@types/node": "^12.12.62",
+    "prettier": "^1.14.3",
+    "tslint": "^5.11.0",
+    "tslint-config-prettier": "^1.15.0",
+    "tslint-eslint-rules": "^5.4.0",
+    "typescript": "^3.9.7"
+  },
+  "dependencies": {
+    "config": "^3.3.2",
+    "discord-api-types": "^0.8.0",
+    "discord.js": "^12.4.1",
+    "eventemitter2": "^6.4.3",
+    "winston": "^3.3.3"
+  }
+}

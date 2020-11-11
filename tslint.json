@@ -1,0 +1,115 @@
+{
+  "extends": [
+    "tslint:latest",
+    "tslint-eslint-rules",
+    "tslint-config-prettier"
+  ],
+  "rules": {
+    "cyclomatic-complexity": true,
+    "curly": [
+      true,
+      "multi-line",
+      "consistent"
+    ],
+    "space-before-function-paren": [
+      true,
+      "never"
+    ],
+    "array-type": [
+      true,
+      "generic"
+    ],
+    "typedef": [
+      true,
+      "call-signature",
+      "property-declaration"
+    ],
+    "whitespace": {
+      "options": [
+        "check-branch",
+        "check-decl",
+        "check-operator",
+        "check-separator",
+        "check-type",
+        "check-typecast",
+        "check-rest-spread"
+      ]
+    },
+    "triple-equals": true,
+    "no-empty": true,
+    "no-invalid-this": true,
+    "no-construct": true,
+    "no-string-literal": true,
+    "no-console": false,
+    "no-shadowed-variable": true,
+    "handle-callback-err": true,
+    "array-bracket-spacing": [
+      true,
+      "never"
+    ],
+    "block-spacing": true,
+    "brace-style": [
+      true,
+      "1tbs",
+      {
+        "allowSingleLine": true
+      }
+    ],
+    "trailing-comma": [
+      true,
+      "never"
+    ],
+    "ter-computed-property-spacing": true,
+    "eofline": true,
+    "ter-indent": [
+      true,
+      2,
+      {
+        "SwitchCase": 1
+      }
+    ],
+    "no-consecutive-blank-lines": [
+      true,
+      {
+        "max": 2,
+        "maxEOF": 1,
+        "maxBOF": 0
+      }
+    ],
+    "ter-no-tabs": true,
+    "no-trailing-whitespace": true,
+    "object-curly-spacing": [
+      true,
+      "always"
+    ],
+    "object-literal-key-quotes": [
+      true,
+      "as-needed"
+    ],
+    "quotemark": [
+      true,
+      "single",
+      {
+        "avoidEscape": true,
+        "allowTemplateLiterals": true
+      }
+    ],
+    "semicolon": [
+      true,
+      "never"
+    ],
+    "comment-format": true,
+    "ter-arrow-body-style": true,
+    "ter-arrow-spacing": true,
+    "ter-prefer-arrow-callback": true,
+    "space-in-parens": [
+      true,
+      "never"
+    ],
+    "object-literal-sort-keys": false,
+    "object-literal-shorthand": false,
+    "new-parens": false,
+    "variable-name": false,
+    "no-bitwise": false
+  }
+}
