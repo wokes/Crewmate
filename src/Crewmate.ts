@@ -1,9 +1,10 @@
-import * as Config from 'config'
+import Config from 'config'
+
 import { CategoryChannel, Client, Guild, MessageEmbed, TextChannel, User, VoiceChannel } from 'discord.js'
 
 import App from './App'
 
-// import { ChatCommands, DiscordFeeds, GroupAnnouncements, LinkWarnings } from './Apps'
+import * as Apps from './Apps'
 
 class Crewmate {
   public app: App
@@ -14,15 +15,13 @@ class Crewmate {
   public voiceChannels: any
 
   public mainCategory: CategoryChannel
-  public adminCategory: CategoryChannel
   public lobbyStatusChannel: TextChannel
-  public voiceLogChannel: TextChannel
 
   public gameLobbyCategories: any
   public statusMessages: any
   public lastStatusMessage: Date
 
-  // public apps: any
+  public apps: any
 
   constructor(app: App) {
     this.app = app
@@ -38,8 +37,8 @@ class Crewmate {
       nonempty: null
     }
 
-    // this.apps = {}
-    // this.registerApps()
+    this.apps = {}
+    this.registerApps()
 
     this.init()
   }
@@ -60,26 +59,6 @@ class Crewmate {
     return this.gameLobbyCategories.find(cat => cat.id === textChannel.parentID).voice
   }
 
-  public async updateVoiceChannelName(channel: VoiceChannel, code?: string, region?: string): Promise<void> {
-    const bits = ['voice']
-
-    if (code) {
-      bits.push(code)
-
-      if (region) {
-        bits.push(region)
-      }
-    }
-
-    const name = bits.join('-')
-
-    if (channel.name !== name) {
-      console.log(`Changing ${channel.name} to ${name}`)
-      await channel.edit({ name })
-      await this.sleep(2000)
-    }
-  }
-
   public getVoiceChannelUserCount(channel: VoiceChannel): number {
     return channel.members.array().length
   }
@@ -90,15 +69,6 @@ class Crewmate {
 
   public userIsInVoiceChannel(user: User, channel: VoiceChannel): boolean {
     return channel.members.get(user.id) !== undefined
-  }
-
-  public async logVoice(message): Promise<void> {
-    // this.voiceLogChannel.send(message)
-  }
-
-  public looksLikeGameCode(text: string): boolean {
-    text = text.toLowerCase()
-    return text.length === 6 && /[a-z]{6}/.test(text)
   }
 
   public async purgeStatusMessages(): Promise<void> {
@@ -185,6 +155,20 @@ class Crewmate {
     await this.sleep(2000)
   }
 
+  public parseCommand(text: string): any {
+    const isCommand = text.substr(0, 1) === '!'
+
+    if (isCommand) {
+      text = text.substr(1)
+      const args = text.split(' ')
+      const cmd = (args.splice(0, 1)).toString()
+
+      return { isCommand, cmd, args }
+    } else {
+      return { isCommand: false }
+    }
+  }
+
   private async init(): Promise<void> {
     this.client.user.setActivity('Powered by Wojtex')
 
@@ -213,6 +197,20 @@ class Crewmate {
     })
   }
 
+  private registerApps(): void {
+    if (!Config.has('apps')) {
+      return
+    }
+
+    for (const appName in Apps) {
+      if (Object.prototype.hasOwnProperty.call(Apps, appName)) {
+        if (Config.has(`apps.${appName}`) && Config.apps[appName].enabled) {
+          this.apps[appName] = new Apps[appName](this)
+        }
+      }
+    }
+  }
+
   private async getGuild(): Promise<void> {
     this.guild = await this.client.guilds.fetch(Config.guildId)
   }
@@ -221,7 +219,6 @@ class Crewmate {
     this.categories = this.client.channels.cache.filter(ch => ch.type === 'category')
 
     this.mainCategory = this.categories.find(cat => cat.name.toLowerCase() === Config.mainCategoryName.toLowerCase())
-    this.adminCategory = this.categories.find(cat => cat.name.toLowerCase() === Config.adminCategoryName.toLowerCase())
   }
 
   private getChannels(): void {
@@ -229,7 +226,6 @@ class Crewmate {
     this.voiceChannels = this.client.channels.cache.filter(ch => ch.type === 'voice')
 
     this.lobbyStatusChannel = this.textChannels.find(ch => ch.name.toLowerCase() === Config.lobbyStatusChannelName.toLowerCase() && ch.parentID === this.mainCategory.id)
-    this.voiceLogChannel = this.textChannels.find(ch => ch.name.toLowerCase() === Config.voiceLogChannelName.toLowerCase() && ch.parentID === this.adminCategory.id)
   }
 
   private async getGameLobbies(): Promise<void> {
@@ -257,24 +253,6 @@ class Crewmate {
 
     await Promise.all(promises)
   }
-
-  // private registerApps(): void {
-  //   if (Config.apps.DiscordFeeds.enabled) {
-  //     this.apps.DiscordFeeds = new DiscordFeeds(this)
-  //   }
-
-  //   if (Config.apps.GroupAnnouncements.enabled) {
-  //     this.apps.GroupAnnouncements = new GroupAnnouncements(this)
-  //   }
-
-  //   if (Config.apps.ChatCommands.enabled) {
-  //     this.apps.ChatCommands = new ChatCommands(this)
-  //   }
-
-  //   if (Config.apps.LinkWarnings.enabled) {
-  //     this.apps.LinkWarnings = new LinkWarnings(this)
-  //   }
-  // }
 }
 
 export default Crewmate
