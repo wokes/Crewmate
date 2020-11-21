@@ -32,6 +32,7 @@
     "discord-api-types": "^0.8.0",
     "discord.js": "^12.4.1",
     "eventemitter2": "^6.4.3",
+    "moment": "^2.29.1",
     "winston": "^3.3.3"
   }
 }
