@@ -181,19 +181,19 @@ class Crewmate {
     await this.updateStatusEmbeds()
 
     this.client.on('debug', info => {
-      console.log({ info })
+      this.app.emit('debug', info)
     })
 
     this.client.on('error', error => {
-      console.log({ error })
+      this.app.emit('debug', error)
     })
 
-    this.client.on('warn', warn => {
-      console.log({ warn })
+    this.client.on('warning', warn => {
+      this.app.emit('debug', warn)
     })
 
     this.client.on('rateLimit', rateLimit => {
-      console.log({ rateLimit })
+      this.app.emit('warning', rateLimit)
     })
   }
 
