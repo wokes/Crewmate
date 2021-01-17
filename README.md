@@ -47,3 +47,8 @@ Reservation will be removed after they join your voice channel. You can also rem
 
 Reservation duration is configured under `apps.Reservations.timeout`.
 
+
+## Deployment
+Personally I run it on my desktop Raspberry Pi cluster running Kubernetes.
+Included is a Dockerfile you can use to containerize the app.
+
