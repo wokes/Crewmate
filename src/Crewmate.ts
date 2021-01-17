@@ -31,16 +31,16 @@ class Crewmate {
     this.voiceChannels = []
     this.gameLobbyCategories = []
 
+    this.apps = {}
+
     this.statusMessages = {
       empty: null,
       full: null,
       nonempty: null
     }
 
-    this.apps = {}
-    this.registerApps()
-
     this.init()
+    this.registerApps()
   }
 
   public get client() : Client {
@@ -245,7 +245,7 @@ class Crewmate {
         id: cat.id,
         position: cat.rawPosition,
         number: Number(cat.name.replace('Lobby #', '')),
-        voice: voice,
+        voice,
         text: this.textChannels.find(ch => ch.parentID === cat.id),
         invite: permInvite
       })
