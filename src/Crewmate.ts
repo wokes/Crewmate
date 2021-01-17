@@ -197,7 +197,7 @@ class Crewmate {
     })
   }
 
-  private registerApps(): void {
+  private async registerApps(): Promise<void> {
     if (!Config.has('apps')) {
       return
     }

@@ -31,7 +31,7 @@ class Reservations {
     return this.crewmate.client
   }
 
-  private handleMessage(message: Message): Promise<void> {
+  private handleMessage(message: Message): void {
     const channel = message.channel
 
     // Ignore DM/News channels
@@ -80,7 +80,7 @@ class Reservations {
     }
   }
 
-  private handleReaction(messageReaction: MessageReaction, user: User): Promise<void> {
+  private handleReaction(messageReaction: MessageReaction, user: User): void {
     // Ignore self-reactions
     if (user.bot === true) {
       return
@@ -108,7 +108,7 @@ class Reservations {
     }
   }
 
-  private handleVoiceStateUpdate(oldMember: VoiceState, newMember: VoiceState): Promise<void> {
+  private handleVoiceStateUpdate(oldMember: VoiceState, newMember: VoiceState): void {
     const oldChannel = oldMember.channel
     const newChannel = newMember.channel
 
