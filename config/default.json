@@ -1,0 +1,31 @@
+{
+  "token": "SECRET",
+  "guildId": "SECRET",
+  "mainCategoryName": "główny",
+  "adminCategoryName": "admin room",
+  "lobbyStatusChannelName": "status-lobby",
+  "apps": {
+    "Maps": {
+      "enabled": true,
+      "data": [
+        {
+          "aliases": ["skeld"],
+          "img": "https://i.imgur.com/HCm2uLT.png"
+        }, {
+          "aliases": ["polus"],
+          "img": "https://i.imgur.com/PSdize0.png"
+        }, {
+          "aliases": ["mira", "mira hq", "mira-hq"],
+          "img": "https://i.imgur.com/KPQJB8r.png"
+        }
+      ]
+    },
+    "GameCodes": {
+      "enabled": true
+    },
+    "Reservations": {
+      "enabled": true,
+      "timeout": 1800
+    }
+  }
+}
