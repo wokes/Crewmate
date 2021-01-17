@@ -67,9 +67,9 @@ class Reservations {
           voiceChannel,
           user: reservation,
           timeout: setTimeout(() => {
-            const r = this.reservations.find(r => r.id === message.id)
-            if (r) {
-              this.removeReservation(r)
+            const res = this.reservations.find(r => r.id === message.id)
+            if (res) {
+              this.removeReservation(res)
               message.channel.send(`Rezerwacja dla ${reservation} wygasła.`)
             } else {
               console.log('reservation not found.')
@@ -129,10 +129,10 @@ class Reservations {
         const reservations = this.reservations.filter(r => r.voiceChannel.id === newChannel.id)
 
         if (reservations.length) {
-          const r = reservations.find(r => r.user.id === newMember.member.id)
-          if (r !== undefined && r.user.id === newMember.member.id) {
-            this.removeReservation(r)
-            r.channel.send(`Usuwam rezerwację dla ${r.user} bo dołączył do kanału.`)
+          const res = reservations.find(r => r.user.id === newMember.member.id)
+          if (res !== undefined && res.user.id === newMember.member.id) {
+            this.removeReservation(res)
+            res.channel.send(`Usuwam rezerwację dla ${res.user} bo dołączył do kanału.`)
           } else {
             reservations[0].channel.send(`${newMember.member} sorry, miejsce zarezerwowane dla: ${reservations.map(r => r.user).join(', ')}`)
             newMember.kick()
