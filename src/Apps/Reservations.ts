@@ -1,6 +1,6 @@
 import * as Config from 'config'
 import { Client, Message, MessageReaction, TextChannel, User, VoiceState } from 'discord.js'
-import moment from 'moment'
+import moment from 'moment-timezone'
 
 import Crewmate from '../Crewmate'
 
@@ -58,7 +58,7 @@ class Reservations {
           return
         }
 
-        message.reply(`rezerwuję miejsce dla ${reservation}. Rezerwacja wygasa ${moment().add(Config.apps.Reservations.timeout, 'seconds').format('DD-MM-YYYY HH:mm:ss')}. Kliknij reakcje aby anulować.`)
+        message.reply(`rezerwuję miejsce dla ${reservation}. Rezerwacja wygasa ${moment().add(Config.apps.Reservations.timeout, 'seconds').tz('Europe/Warsaw').format('DD-MM-YYYY HH:mm:ss')}. Kliknij reakcje aby anulować.`)
         message.react('❌')
 
         this.reservations.push({
