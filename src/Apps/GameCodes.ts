@@ -1,4 +1,3 @@
-import * as Config from 'config'
 import { Client, Message, MessageReaction, TextChannel, User, VoiceChannel, VoiceState } from 'discord.js'
 
 import Crewmate from '../Crewmate'

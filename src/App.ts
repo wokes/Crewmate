@@ -7,8 +7,6 @@ import Logger from './Utils/Logger'
 import Crewmate from './Crewmate'
 import * as Events from './Events'
 
-// import { ChatCommands, DiscordFeeds, GroupAnnouncements, LinkWarnings } from './Apps'
-
 class App extends EventEmitter {
   public client: Client
   public crewmate: Crewmate
@@ -27,10 +25,6 @@ class App extends EventEmitter {
     this.registerEvents()
     this.registerUtilities()
 
-    /**
-     * Gracefully handle closing the program
-     * Log out before exiting the process
-     */
     process.on('SIGINT', async() => {
       process.exit()
     })
